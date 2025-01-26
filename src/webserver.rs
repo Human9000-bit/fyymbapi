@@ -1,4 +1,6 @@
-use crate::yandex_api::{get_track_download_info, get_track_info, search_artists, ArtistsJson, TrackData};
+use crate::yandex_api::{
+    get_track_download_info, get_track_info, search_artists, ArtistsJson, TrackData,
+};
 use actix_web::{
     error, get,
     web::{Json, Path},
@@ -22,10 +24,9 @@ pub async fn get_song(track_id: Path<String>) -> Result<Json<String>, Error> {
         cover_url: track_info.cover_url,
         download_info: track_url,
     };
-    
 
     let track_data = serde_json::to_string(&track_data).map_err(error::ErrorInternalServerError)?;
-    
+
     Ok(Json(track_data))
 }
 
@@ -34,6 +35,6 @@ pub async fn search_artists_web(query: Path<String>) -> Result<Json<ArtistsJson>
     let artists_json = search_artists(query.to_string())
         .await
         .map_err(error::ErrorInternalServerError)?;
-    
+
     Ok(Json(artists_json))
 }

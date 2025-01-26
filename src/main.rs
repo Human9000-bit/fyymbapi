@@ -1,9 +1,9 @@
-mod websrv;
-mod yapi;
+mod webserver;
+mod yandex_api;
 
 use actix_web::{App, HttpServer};
 use anyhow::{Ok, Result};
-use websrv::get_song;
+use webserver::get_song;
 
 #[actix_web::main]
 async fn main() -> Result<()> {

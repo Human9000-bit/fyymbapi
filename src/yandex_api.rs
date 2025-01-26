@@ -7,7 +7,6 @@ pub async fn get_track_info(track_id: usize) -> Result<TrackInfo> {
         .text()
         .await?;
 
-    dbg!(&track_info);
 
     let data: Value =
         serde_json::from_str(&track_info).context("failed to parse the whole json")?;

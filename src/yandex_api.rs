@@ -1,11 +1,19 @@
+use crate::SharedState;
 use anyhow::{Context, Ok, Result};
 use serde_json::Value;
+use std::sync::Arc;
 
-pub async fn get_track_info(track_id: usize) -> Result<TrackInfo> {
-    let track_info = reqwest::get(format!("https://api.music.yandex.ru/tracks/{track_id}"))
-        .await?
-        .text()
-        .await?;
+pub async fn get_track_info(track_id: usize, state: &SharedState) -> Result<TrackInfo> {
+    let track_info = state
+        .client
+        .get(format!("https://api.music.yandex.ru/tracks/{track_id}"));
+
+    let track_info = match state.token.clone() {
+        Some(token) => track_info.bearer_auth(token),
+        None => track_info,
+    };
+
+    let track_info = track_info.send().await?.text().await?;
 
     let data: Value =
         serde_json::from_str(&track_info).context("failed to parse the whole json")?;
@@ -38,13 +46,17 @@ pub async fn get_track_info(track_id: usize) -> Result<TrackInfo> {
     })
 }
 
-pub async fn get_track_download_info(track_id: usize) -> Result<String> {
-    let download_info = reqwest::get(format!(
+pub async fn get_track_download_info(track_id: usize, state: Arc<SharedState>) -> Result<String> {
+    let req = state.client.get(format!(
         "https://api.music.yandex.ru/tracks/{track_id}/download-info"
-    ))
-    .await?
-    .text()
-    .await?;
+    ));
+
+    let req = match state.token.clone() {
+        Some(token) => req.bearer_auth(token),
+        None => req,
+    };
+
+    let download_info = req.send().await?.text().await?;
 
     let data: Value = serde_json::from_str(&download_info)?;
     let track_url = data["result"][0]["downloadInfoUrl"].as_str().unwrap();
@@ -131,7 +143,7 @@ mod tests {
 
     #[actix_web::test]
     async fn test_track_info() -> Result<(), anyhow::Error> {
-        let track_info = get_track_info(127986642).await?;
+        let track_info = get_track_info(127986642, &crate::SharedState::default()).await?;
 
         let needed = TrackInfo {
             name: "nerves".to_string(),
@@ -142,5 +154,12 @@ mod tests {
 
         assert_eq!(needed, track_info);
         Ok(())
+    }
+
+    #[actix_web::test]
+    async fn test_track_info_ok() {
+        get_track_info(127986642, &crate::SharedState::default())
+            .await
+            .unwrap();
     }
 }

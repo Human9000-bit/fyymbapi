@@ -8,12 +8,13 @@ pub async fn get_track_info(track_id: usize, state: &SharedState) -> Result<Trac
         .client
         .get(format!("https://api.music.yandex.ru/tracks/{track_id}"));
 
-    let track_info = match state.token.clone() {
+    let track_info = match &state.token {
         Some(token) => track_info.bearer_auth(token),
         None => track_info,
     };
 
-    let track_info = track_info.send().await?.text().await?;
+    let track_info = track_info.send().await.context("failed to download track info")?
+        .text().await?;
 
     let data: Value =
         serde_json::from_str(&track_info).context("failed to parse the whole json")?;

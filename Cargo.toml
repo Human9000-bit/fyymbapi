@@ -2,6 +2,7 @@
 name = "fyymbapi"
 version = "0.1.0"
 edition = "2021"
+readme = "README.md"
 
 [dependencies]
 actix-web = { version = "4.9.0", features = ["rustls"] }

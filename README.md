@@ -87,39 +87,3 @@ cargo watch -x 'run'
 # Production mode
 cargo run --release
 ```
-
-## Testing
-
-Run integration tests:
-```bash
-cargo test -- --test-threads=1
-```
-
-## Architecture
-
-```
-Main Components
-├── Webserver (Actix-web)
-│   ├── /search - Artist search endpoint
-│   └── /get_song - Track metadata endpoint
-├── Yandex API Client
-│   ├── Track info parser
-│   └── Download URL resolver
-└── Shared State
-    ├── Reqwest HTTP client
-    └── Optional OAuth token
-```
-
-## Security Notice
-
-1. The Yandex OAuth token (if used) is stored in memory only
-2. Server binds to localhost by default (edit main.rs for network access)
-3. HTTPS recommended for production deployments
-
-## License
-
-Unlicense - See [UNLICENSE](https://unlicense.org) for details
-
----
-
-**Warning:** This project may violate Yandex Music's Terms of Service. Use at your own risk.
